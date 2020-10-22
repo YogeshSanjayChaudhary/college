@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - aws --version
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - REPOSITORY_URI=026181928774.dkr.ecr.ap-south-1.amazonaws.com/website
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI .
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker images...
+      - docker push 026181928774.dkr.ecr.ap-south-1.amazonaws.com/website:latest
+      - echo Writing image definitions file...
+      - printf '[{"name":"website","imageUri":"%s"}]' $REPOSITORY_URI > imagedefinitions.json
+artifacts:
+  files: imagedefinitions.json
